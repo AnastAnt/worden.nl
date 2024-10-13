@@ -1,0 +1,126 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Словник</title>
+
+    <!-- Підключаємо Font Awesome для іконок -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
+    <!-- Підключаємо наші стилі -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1 class="text-center mb-4">Мій Словник</h1>
+
+      <!-- Форма для додавання слова -->
+      <form id="wordForm" class="mb-4">
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <input
+              type="text"
+              id="word"
+              class="form-control"
+              placeholder="Слово"
+              required
+            />
+          </div>
+          <div class="col-md-4 mb-3">
+            <input
+              type="text"
+              id="translation"
+              class="form-control"
+              placeholder="Переклад"
+              required
+            />
+          </div>
+          <div class="col-md-4 mb-3">
+            <input
+              type="text"
+              id="category"
+              class="form-control"
+              placeholder="Категорія"
+              required
+            />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success w-100">
+          Додати слово
+        </button>
+      </form>
+
+      <!-- Поле для пошуку -->
+      <div class="mb-3">
+        <input
+          type="text"
+          id="search"
+          class="form-control"
+          placeholder="Пошук..."
+        />
+      </div>
+      <!-- Картки для вивчення -->
+      <form id="learningForm">
+        <label>
+          <input type="radio" name="learningType" value="random" checked />
+          Випадкові 20 слів
+        </label>
+        <label>
+          <input type="radio" name="learningType" value="category" />
+          Вчити за категорією
+        </label>
+        <select id="categorySelect" disabled>
+          <option value="">Виберіть категорію</option>
+          <!-- Категорії будуть додані програмно -->
+        </select>
+        <button id="startLearning" class="btn btn-info">Почати вивчення</button>
+      </form>
+      <div id="card"></div>
+
+      <!-- Випадаючий список для сортування -->
+      <label for="sortSelect">Сортувати за:</label>
+      <select id="sortSelect" class="sort-dropdown">
+        <option value="word">За словом</option>
+        <option value="category">За категорією</option>
+      </select>
+
+      <!-- Виведення списку слів -->
+      <div id="wordList" class="list-group"></div>
+    </div>
+    <!-- Модальне вікно для редагування -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Редагувати слово</h2>
+        <form id="editForm">
+          <label for="editWord">Слово:</label>
+          <input type="text" id="editWord" name="editWord" required />
+
+          <label for="editTranslation">Переклад:</label>
+          <input
+            type="text"
+            id="editTranslation"
+            name="editTranslation"
+            required
+          />
+
+          <label for="editCategory">Категорія:</label>
+          <input type="text" id="editCategory" name="editCategory" required />
+
+          <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+        </form>
+      </div>
+    </div>
+    <!-- Підключаємо SweetAlert2 для гарних сповіщень -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Підключаємо основний JavaScript код -->
+    <script src="app.js"></script>
+  </body>
+</html>
