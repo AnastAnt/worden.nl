@@ -6,7 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const categoryInput = document.getElementById("category");
   const wordList = document.getElementById("wordList");
   const searchInput = document.getElementById("search");
-  const sortSelect = document.getElementById("sortSelect");
+  const sortByWord = document.getElementById("sortByWord");
+  const sortByCategory = document.getElementById("sortByCategory");
   const startLearning = document.getElementById("startLearning");
   const categorySelect = document.getElementById("categorySelect");
   const learningTypeInputs = document.querySelectorAll(
@@ -32,6 +33,18 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("words", JSON.stringify(words));
   };
 
+  // Функція для оновлення списку категорій у випадаючому списку
+  const updateCategorySelect = () => {
+    const uniqueCategories = [...new Set(words.map((word) => word.category))];
+    categorySelect.innerHTML = '<option value="">Виберіть категорію</option>';
+    uniqueCategories.forEach((category) => {
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category;
+      categorySelect.appendChild(option);
+    });
+  };
+
   // Відображення слів у вигляді списку
   const displayWords = (filteredWords = words) => {
     wordList.innerHTML = ""; // Очищуємо список
@@ -40,23 +53,25 @@ document.addEventListener("DOMContentLoaded", () => {
       wordDiv.className =
         "list-group-item list-group-item-action flex-column align-items-start mb-2";
       wordDiv.innerHTML = `
-          <div class="d-flex w-100 justify-content-between align-items-center">
-              <h5 class="mb-1">${wordObj.word}</h5>
-              <p class="mb-1"><strong>${wordObj.translation}</strong></p>
-          </div>
-          <small>${wordObj.category}</small>
-          <div class="learned-status ${
-            wordObj.learned ? "learned" : ""
-          }" onclick="toggleLearned(${index})" style="cursor: pointer;">
-              ${wordObj.learned ? "✔" : "⬜"}
-          </div>
-          <button class="btn btn-warning btn-sm me-2" onclick="openEditModal(${index})">
-              <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn btn-danger btn-sm" onclick="deleteWord(${index})">
-              <i class="fas fa-trash"></i>
-          </button>
-        `;
+                  <div class="d-flex w-100 justify-content-between align-items-center">
+                      <h5 class="mb-1">${wordObj.word}</h5>
+                      <p class="mb-1"><strong>${
+                        wordObj.translation
+                      }</strong></p>
+                  </div>
+                  <div> <small>${wordObj.category}</small>
+                  <div class="learned-status ${
+                    wordObj.learned ? "learned" : ""
+                  }" onclick="toggleLearned(${index})" style="cursor: pointer;">
+                      ${wordObj.learned ? "✔" : "⬜"}
+                  </div>
+                  <button class="btn btn-warning btn-sm me-2" onclick="openEditModal(${index})">
+                      <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteWord(${index})">
+                      <i class="fas fa-trash"></i>
+                  </button></div>
+              `;
       wordList.appendChild(wordDiv);
     });
   };
@@ -64,78 +79,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Додавання нового слова
   wordForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const newWord = wordInput.value.toLowerCase(); // Робимо слова в нижньому регістрі для перевірки дубліката
-    const newTranslation = translationInput.value;
-    const newCategory = categoryInput.value;
+    const newWord = {
+      word: wordInput.value,
+      translation: translationInput.value,
+      category: categoryInput.value,
+      learned: false, // Нове слово завжди невивчене
+    };
 
-    // Перевіряємо, чи слово вже існує в списку
-    const duplicateIndex = words.findIndex(
-      (wordObj) => wordObj.word === newWord
-    );
-    if (duplicateIndex !== -1) {
-      // Якщо слово вже існує, відкриваємо модальне вікно для редагування цього слова
-      currentEditIndex = duplicateIndex;
-      openEditModal(duplicateIndex, true); // true означає, що це дублікат
-    } else {
-      // Якщо дубліката немає, додаємо нове слово
-      const newWordObj = {
-        word: newWord,
-        translation: newTranslation,
-        category: newCategory,
-        learned: false, // Нове слово завжди невивчене
-      };
-      words.push(newWordObj);
-      updateLocalStorage();
-      displayWords();
-      wordForm.reset();
-    }
-  });
-
-  // Функція для відображення модального вікна для редагування слова
-  window.openEditModal = (index, isDuplicate = false) => {
-    currentEditIndex = index;
-    const wordObj = words[index];
-
-    // Заповнюємо поля форми для редагування
-    editWordInput.value = wordObj.word;
-    editTranslationInput.value = wordObj.translation;
-    editCategoryInput.value = wordObj.category;
-
-    // Відкриваємо модальне вікно
-    editModal.style.display = "block";
-
-    if (isDuplicate) {
-      alert("Це слово вже існує! Ви можете його редагувати.");
-    }
-  };
-
-  // Закриття модального вікна
-  closeModal.addEventListener("click", () => {
-    editModal.style.display = "none";
-  });
-
-  // Закриття модального вікна при кліку за межами вікна
-  window.addEventListener("click", (event) => {
-    if (event.target == editModal) {
-      editModal.style.display = "none";
-    }
-  });
-
-  // Збереження змін після редагування слова
-  editForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    if (currentEditIndex !== null) {
-      words[currentEditIndex].word = editWordInput.value;
-      words[currentEditIndex].translation = editTranslationInput.value;
-      words[currentEditIndex].category = editCategoryInput.value;
-
-      updateLocalStorage();
-      displayWords();
-
-      // Закриваємо модальне вікно після збереження
-      editModal.style.display = "none";
-    }
+    words.push(newWord);
+    updateLocalStorage();
+    displayWords();
+    updateCategorySelect(); // Оновлюємо список категорій
+    wordForm.reset();
   });
 
   // Пошук слів
@@ -147,17 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
         wordObj.translation.toLowerCase().includes(searchTerm)
     );
     displayWords(filteredWords);
-  });
-
-  // Сортування за вибором користувача
-  sortSelect.addEventListener("change", () => {
-    const sortBy = sortSelect.value;
-    if (sortBy === "word") {
-      words.sort((a, b) => a.word.localeCompare(b.word));
-    } else if (sortBy === "category") {
-      words.sort((a, b) => a.category.localeCompare(b.category));
-    }
-    displayWords(); // Оновлення списку після сортування
   });
 
   // Початок вивчення
@@ -204,8 +148,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cardIndex < studyWords.length) {
       const word = studyWords[cardIndex].word;
       card.innerHTML = `
-                      <p id="study-word" style="cursor: pointer;"><strong>${word}</strong></p>
-                  `;
+                    <p id="study-word" style="cursor: pointer;"><strong>${word}</strong></p>
+                `;
       const studyWordElement = document.getElementById("study-word");
 
       // Показ перекладу після кліку на слово
@@ -218,10 +162,10 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       // Завершення циклу вивчення
       card.innerHTML = `
-              <p>Ви завершили вивчення всіх слів!</p>
-              <button id="restartLearning" class="btn btn-primary">Почати знову</button>
-              <button id="returnToWords" class="btn btn-secondary">Повернутися до списку</button>
-          `;
+            <p>Ви завершили вивчення всіх слів!</p>
+            <button id="restartLearning" class="btn btn-primary">Почати знову</button>
+            <button id="returnToWords" class="btn btn-secondary">Повернутися до списку</button>
+        `;
 
       // Додавання обробників подій для кнопок "Почати знову" і "Повернутися до списку"
       document
@@ -305,4 +249,48 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   };
+
+  // Функція для відкриття модального вікна для редагування слова
+  window.openEditModal = (index) => {
+    currentEditIndex = index;
+    const wordObj = words[index];
+
+    // Заповнюємо поля форми для редагування
+    editWordInput.value = wordObj.word;
+    editTranslationInput.value = wordObj.translation;
+    editCategoryInput.value = wordObj.category;
+
+    // Відкриваємо модальне вікно
+    editModal.style.display = "block";
+  };
+
+  // Закриття модального вікна
+  closeModal.addEventListener("click", () => {
+    editModal.style.display = "none";
+  });
+
+  // Закриття модального вікна при кліку за межами вікна
+  window.addEventListener("click", (event) => {
+    if (event.target == editModal) {
+      editModal.style.display = "none";
+    }
+  });
+
+  // Збереження змін після редагування слова
+  editForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    if (currentEditIndex !== null) {
+      words[currentEditIndex].word = editWordInput.value;
+      words[currentEditIndex].translation = editTranslationInput.value;
+      words[currentEditIndex].category = editCategoryInput.value;
+
+      updateLocalStorage();
+      displayWords();
+      updateCategorySelect(); // Оновлюємо список категорій
+
+      // Закриваємо модальне вікно після збереження
+      editModal.style.display = "none";
+    }
+  });
 });
